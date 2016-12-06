@@ -57,10 +57,6 @@ def main():
     num_correct = np.sum(y_test_pred == y_test)
     accuracy = float(num_correct) / num_test
     print 'Got %d / %d correct => accuracy: %f' % (num_correct, num_test, accuracy)
-    starttime = datetime.datetime.now()
-    dists_one = classifier.compute_distances_one_loop(X_test)
-    endtime = datetime.datetime.now()
-    print (endtime-starttime).seconds
 if __name__ == '__main__':
     main()
 # vim: set expandtab ts=4 sw=4 sts=4 tw=100:
