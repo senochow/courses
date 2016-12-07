@@ -16,7 +16,7 @@ import random
 from cs231n.data_utils import load_CIFAR10
 from cs231n.classifiers import KNearestNeighbor
 import datetime
-def gen_train_test():
+def gen_train_test(num_training, num_test):
     """ generate training and testing dataset
 
     """
@@ -28,11 +28,9 @@ def gen_train_test():
     print 'Test labels shape: ', y_test.shape
 
     # Subsample the data for more efficient code execution
-    num_training = 5000
     mask = range(num_training)
     X_train = X_train[mask]
     y_train = y_train[mask]
-    num_test = 500
     mask = range(num_test)
     X_test = X_test[mask]
     y_test = y_test[mask]
@@ -43,7 +41,7 @@ def gen_train_test():
     return X_train, y_train, X_test, y_test
 
 def main():
-    X_train, y_train, X_test, y_test = gen_train_test()
+    X_train, y_train, X_test, y_test = gen_train_test(5000, 500)
     num_test = y_test.shape[0]
     classifier = KNearestNeighbor()
     classifier.train(X_train, y_train)

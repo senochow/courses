@@ -21,7 +21,7 @@ def load_CIFAR10(ROOT):
     f = os.path.join(ROOT, 'data_batch_%d' % (b, ))
     X, Y = load_CIFAR_batch(f)
     xs.append(X)
-    ys.append(Y)    
+    ys.append(Y)
   Xtr = np.concatenate(xs)
   Ytr = np.concatenate(ys)
   del X, Y
@@ -74,7 +74,7 @@ def load_tiny_imagenet(path, dtype=np.float32):
     with open(boxes_file, 'r') as f:
       filenames = [x.split('\t')[0] for x in f]
     num_images = len(filenames)
-    
+
     X_train_block = np.zeros((num_images, 3, 64, 64), dtype=dtype)
     y_train_block = wnid_to_label[wnid] * np.ones(num_images, dtype=np.int64)
     for j, img_file in enumerate(filenames):
@@ -86,11 +86,11 @@ def load_tiny_imagenet(path, dtype=np.float32):
       X_train_block[j] = img.transpose(2, 0, 1)
     X_train.append(X_train_block)
     y_train.append(y_train_block)
-      
+
   # We need to concatenate all training data
   X_train = np.concatenate(X_train, axis=0)
   y_train = np.concatenate(y_train, axis=0)
-  
+
   # Next load validation data
   with open(os.path.join(path, 'val', 'val_annotations.txt'), 'r') as f:
     img_files = []
@@ -131,7 +131,7 @@ def load_tiny_imagenet(path, dtype=np.float32):
         img_file_to_wnid[line[0]] = line[1]
     y_test = [wnid_to_label[img_file_to_wnid[img_file]] for img_file in img_files]
     y_test = np.array(y_test)
-  
+
   return class_names, X_train, y_train, X_val, y_val, X_test, y_test
 
 
@@ -156,3 +156,76 @@ def load_models(models_dir):
       except pickle.UnpicklingError:
         continue
   return models
+
+def gen_train_test(num_training, num_test):
+    """ generate training and testing dataset
+
+    """
+    cifar10_dir = 'cs231n/datasets/cifar-10-batches-py'
+    X_train, y_train, X_test, y_test = load_CIFAR10(cifar10_dir)
+    print 'Training data shape: ', X_train.shape
+    print 'Training labels shape: ', y_train.shape
+    print 'Test data shape: ', X_test.shape
+    print 'Test labels shape: ', y_test.shape
+
+    # Subsample the data for more efficient code execution
+    mask = range(num_training)
+    X_train = X_train[mask]
+    y_train = y_train[mask]
+    mask = range(num_test)
+    X_test = X_test[mask]
+    y_test = y_test[mask]
+    # Reshape the image data into rows
+    X_train = np.reshape(X_train, (X_train.shape[0], -1))
+    X_test = np.reshape(X_test, (X_test.shape[0], -1))
+    print X_train.shape, X_test.shape
+    return X_train, y_train, X_test, y_test
+
+def gen_train_val_test(num_training, num_validation, num_test):
+    cifar10_dir = 'cs231n/datasets/cifar-10-batches-py'
+    X_train, y_train, X_test, y_test = load_CIFAR10(cifar10_dir)
+    # validation
+    mask = range(num_training, num_training + num_validation)
+    X_val = X_train[mask]
+    y_val = y_train[mask]
+    # training
+    mask = range(num_training)
+    X_train = X_train[mask]
+    y_train = y_train[mask]
+    # We use the first num_test points of the original test set as our test set
+    mask = range(num_test)
+    X_test = X_test[mask]
+    y_test = y_test[mask]
+    print 'Train data shape: ', X_train.shape
+    print 'Train labels shape: ', y_train.shape
+    print 'Validation data shape: ', X_val.shape
+    print 'Validation labels shape: ', y_val.shape
+    print 'Test data shape: ', X_test.shape
+    print 'Test labels shape: ', y_test.shape
+    # Preprocessing: reshape the image data into rows
+    X_train = np.reshape(X_train, (X_train.shape[0], -1))
+    X_val = np.reshape(X_val, (X_val.shape[0], -1))
+    X_test = np.reshape(X_test, (X_test.shape[0], -1))
+
+    # As a sanity check, print out the shapes of the data
+    print 'Training data shape: ', X_train.shape
+    print 'Validation data shape: ', X_val.shape
+    print 'Test data shape: ', X_test.shape
+
+    # Preprocessing: subtract the mean image
+    # first: compute the image mean based on the training data
+    mean_image = np.mean(X_train, axis=0)
+    print 'mean image {}'.format(mean_image[:10]) # print a few of the elements
+    # second: subtract the mean image from train and test data
+    X_train -= mean_image
+    X_val -= mean_image
+    X_test -= mean_image
+    # third: append the bias dimension of ones (i.e. bias trick) so that our SVM
+    # only has to worry about optimizing a single weight matrix W.
+    # Also, lets transform both data matrices so that each image is a column.
+    X_train = np.hstack([X_train, np.ones((X_train.shape[0], 1))]).T
+    X_val = np.hstack([X_val, np.ones((X_val.shape[0], 1))]).T
+    X_test = np.hstack([X_test, np.ones((X_test.shape[0], 1))]).T
+    print 'add bias term...'
+    print X_train.shape, X_val.shape, X_test.shape
+    return X_train, y_train, X_val, y_val, X_test, y_test
