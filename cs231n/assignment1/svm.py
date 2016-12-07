@@ -37,7 +37,7 @@ def main():
     svm = LinearSVM()
     tic = time.time()
     loss_hist = svm.train(X_train, y_train, learning_rate=1e-7, reg=3e4,
-                                  num_iters=2000,batch_size=200, verbose=True)
+                                  num_iters=100000,batch_size=128, verbose=True)
     acc_train = evaluation(svm, X_train, y_train)
     acc_val = evaluation(svm, X_val, y_val)
     acc_test = evaluation(svm, X_test, y_test)
