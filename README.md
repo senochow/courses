@@ -1,5 +1,5 @@
 
 Repository for self-learning courses
 ---
-* [cs231n](http://cs231n.stanford.edu/)
+* [CS231n: Convolutional Neural Networks for Visual Recognition](http://cs231n.stanford.edu/)
 
