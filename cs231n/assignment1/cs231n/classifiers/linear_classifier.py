@@ -13,7 +13,7 @@ class LinearClassifier(object):
     Train this linear classifier using stochastic gradient descent.
 
     Inputs:
-    - X: A numpy array of shape (N, D) containing training data; there are N
+    - X: A numpy array of shape (D, N) containing training data; there are N
       training samples each of dimension D.
     - y: A numpy array of shape (N,) containing training labels; y[i] = c
       means that X[i] has label 0 <= c < C for C classes.
@@ -26,11 +26,11 @@ class LinearClassifier(object):
     Outputs:
     A list containing the value of the loss function at each training iteration.
     """
-    num_train, dim = X.shape
+    dim, num_train = X.shape
     num_classes = np.max(y) + 1 # assume y takes values 0...K-1 where K is number of classes
     if self.W is None:
       # lazily initialize W
-      self.W = 0.001 * np.random.randn(dim, num_classes)
+      self.W = 0.001 * np.random.randn(num_classes, dim)
 
     # Run stochastic gradient descent to optimize W
     loss_history = []
@@ -49,7 +49,9 @@ class LinearClassifier(object):
       # Hint: Use np.random.choice to generate indices. Sampling with         #
       # replacement is faster than sampling without replacement.              #
       #########################################################################
-      pass
+      idx = np.random.choice(num_train, batch_size, replace=True)
+      X_batch = X[:,idx]
+      y_batch = y[idx]
       #########################################################################
       #                       END OF YOUR CODE                                #
       #########################################################################
@@ -63,10 +65,7 @@ class LinearClassifier(object):
       # TODO:                                                                 #
       # Update the weights using the gradient and the learning rate.          #
       #########################################################################
-      pass
-      #########################################################################
-      #                       END OF YOUR CODE                                #
-      #########################################################################
+      self.W -= learning_rate * grad
 
       if verbose and it % 100 == 0:
         print 'iteration %d / %d: loss %f' % (it, num_iters, loss)
@@ -91,15 +90,15 @@ class LinearClassifier(object):
     # TODO:                                                                   #
     # Implement this method. Store the predicted labels in y_pred.            #
     ###########################################################################
-    pass
+    y_pred = np.argmax(np.dot(self.W,X), axis=0)
     ###########################################################################
     #                           END OF YOUR CODE                              #
     ###########################################################################
     return y_pred
-  
+
   def loss(self, X_batch, y_batch, reg):
     """
-    Compute the loss function and its derivative. 
+    Compute the loss function and its derivative.
     Subclasses will override this.
 
     Inputs:
